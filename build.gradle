@@ -6,10 +6,9 @@ plugins {
 
 group = 'com.polarbookshop'
 version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
 
-java {
-	sourceCompatibility = '17'
-}
+description = 'Provides API gateway and cross-cutting concerns.'
 
 repositories {
 	mavenCentral()
@@ -18,6 +17,7 @@ repositories {
 
 ext {
 	set('springCloudVersion', "2023.0.0")
+	set('testcontainersVersion', "1.17.3")
 }
 
 dependencies {
@@ -25,11 +25,27 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation 'org.testcontainers:junit-jupiter'
 }
 
 dependencyManagement {
 	imports {
+		mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+bootBuildImage {
+	imageName = "${project.name}"
+	environment = ["BP_JVM_VERSION": "17.*"]
+
+	docker {
+		publishRegistry {
+			username = project.findProperty("registryUsername")
+			password = project.findProperty("registryToken")
+			url = project.findProperty("registryUrl")
+		}
 	}
 }
 
